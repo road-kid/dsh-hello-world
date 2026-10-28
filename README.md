@@ -1,5 +1,5 @@
 ---
-description: "Adds a restart button to the settings header, directly right of the Open DSH terminal button, and registers /restart: one plugin, two independently switchable components."
+description: "DeepSeek Harness Starter Pack: Adds a restart button to the settings header, directly right of the Open DSH terminal button, and registers /restart: one plugin, two independently switchable components."
 kind: "package-bundle"
 ---
 
@@ -11,7 +11,7 @@ English | [中文](README.zh.md)
 
 One plugin, two components:
 
-- **quick-restart** — a restart button in the settings header, directly right of the Open DSH terminal button, plus the typed `/restart` command. It registers in the same official `settings.action` seat the terminal uses, so both actions share the header and sit before Close; a shell that renders no settings header shows no restart button, and `/restart` stays available.
+- **quick-restart** — a restart button in the settings header, plus the typed `/restart` command. It registers in the same official `settings.action` seat the terminal uses, so both actions share the header and sit before Close; a shell that renders no settings header shows no restart button, and `/restart` stays available.
 - **quick-terminal** — an “Open DSH terminal” button in the settings header that opens the same shell as the terminal bundled with the desktop app.
 
 Both are listed under the single `dsh-hello-world` card in the plugin manager, each with its own switch: keep the restart button only, the terminal only, or switch both off. A command-line Host restarts in place; the official desktop app relaunches itself and the new Host starts under it. The page reconnects on its own and only offers a refresh fallback when no new Host answers.
