@@ -20,7 +20,7 @@
  * plugin writing anything outside its own component tree.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { ReactElement } from 'react'
 
 import { requestRestart } from './api.ts'
@@ -128,10 +128,11 @@ export function useRestartAction(t: Translate): RestartAction {
   }, [])
 
   const capability = snapshot.status === 'ready' ? snapshot.capability : undefined
-  const view = useMemo(
-    (): RestartEntryView => restartEntryView(t, capability, stale, pending),
-    [capability, pending, stale, t],
-  )
+  // Derived on every render rather than memoised. `t` is a stable reference that
+  // reads the active locale at call time, so a memo keyed on `t` would retain the
+  // previous language after the user switches it — the slot outlet re-renders on
+  // a locale change, and recomputing here is what lets the label follow.
+  const view: RestartEntryView = restartEntryView(t, capability, stale, pending)
 
   const showNotice = useCallback((text: string, reload = false): void => {
     // The recovery loop outlives the surface that started it, so a late notice can
@@ -198,7 +199,9 @@ export function useRestartAction(t: Translate): RestartAction {
     void perform()
   }, [capability, pending, perform, stale])
 
-  const overlays = useMemo((): ReactElement => {
+  // Rebuilt each render for the same reason as `view`: the dialog and toast copy
+  // must follow a language switch while they are open.
+  const overlays: ReactElement = ((): ReactElement => {
     const command = capability?.command
     const busyNote = capability === undefined
       ? undefined
@@ -278,7 +281,7 @@ export function useRestartAction(t: Translate): RestartAction {
         )}
       </>
     )
-  }, [capability, confirming, notice, pending, perform, t])
+  })()
 
   return { activate, overlays, view }
 }
