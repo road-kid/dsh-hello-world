@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="100%" role="img" aria-label="dsh-hello-world — a DeepSeek Harness plugin bundle that adds Restart and Open DSH terminal to the settings header">
+  <title>dsh-hello-world — Restart and Open DSH terminal in the settings header</title>
+  <defs>
+    <linearGradient id="helloGrad" x1="6" y1="9" x2="31" y2="27" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67C7FE"/>
+      <stop offset="1" stop-color="#3F77D8"/>
+    </linearGradient>
+    <linearGradient id="restartFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1B3A5C"/>
+      <stop offset="1" stop-color="#16304C"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#3F77D8" stop-opacity="0.32"/>
+      <stop offset="1" stop-color="#3F77D8" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="1.4" cy="1.4" r="1.2" fill="#223047"/>
+    </pattern>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#02060C" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="400" fill="#0A0E15"/>
+  <rect width="1200" height="400" fill="url(#dots)"/>
+  <circle cx="920" cy="200" r="430" fill="url(#glow)"/>
+
+  <!-- Brand mark + eyebrow -->
+  <g transform="translate(72 58) scale(0.8)" fill="none">
+    <g fill="url(#helloGrad)">
+      <circle cx="8.6" cy="15.6" r="2.4"/>
+      <circle cx="8.6" cy="25.6" r="2.4"/>
+    </g>
+    <path d="M16.8 9.2H21.4C27.6 9.2 31.2 13.3 31.2 18C31.2 22.7 27.6 26.8 21.4 26.8H16.8V9.2Z" stroke="url(#helloGrad)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="112" y="80" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="17" font-weight="600" letter-spacing="3.2" fill="#67C7FE">DEEPSEEK HARNESS · PLUGIN BUNDLE</text>
+
+  <!-- Title + value -->
+  <text x="70" y="170" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="58" font-weight="800" letter-spacing="-1.5" fill="#F3F7FB">dsh-hello-world</text>
+  <text x="72" y="222" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="22" fill="#D6E0EC">Restart the Host and open a real shell,</text>
+  <text x="72" y="252" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="22" fill="#D6E0EC">both from the settings header.</text>
+  <text x="72" y="316" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="17" fill="#8C99AE">One bundle&#160;&#160;·&#160;&#160;Two components&#160;&#160;·&#160;&#160;MIT&#160;&#160;·&#160;&#160;node ≥ 22</text>
+
+  <!-- Settings header preview -->
+  <g filter="url(#soft)">
+    <rect x="628" y="44" width="500" height="150" rx="16" fill="#111827" stroke="#2A3852" stroke-width="1.5"/>
+  </g>
+  <text x="652" y="86" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="21" font-weight="600" fill="#C9D4E3">Settings</text>
+
+  <rect x="802" y="62" width="176" height="36" rx="18" fill="#16233A" stroke="#33425E" stroke-width="1.5"/>
+  <text x="890" y="85" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="16.5" fill="#CFE0F5">Open DSH terminal</text>
+
+  <rect x="990" y="62" width="86" height="36" rx="18" fill="url(#restartFill)" stroke="#67C7FE" stroke-width="1.5"/>
+  <text x="1033" y="85" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="16.5" font-weight="600" fill="#EAF4FF">Restart</text>
+
+  <text x="1106" y="86" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" fill="#7C8AA0">×</text>
+
+  <line x1="652" y1="112" x2="1104" y2="112" stroke="#202B40" stroke-width="1.5"/>
+  <text x="652" y="146" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="15.5" fill="#9FB0C8">General</text>
+  <text x="742" y="146" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="15.5" fill="#5F6E86">Appearance</text>
+  <text x="864" y="146" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="15.5" fill="#5F6E86">Terminal</text>
+  <rect x="650" y="154" width="52" height="3" rx="1.5" fill="#67C7FE"/>
+
+  <!-- Terminal window -->
+  <g filter="url(#soft)">
+    <path d="M570 204 H1114 A14 14 0 0 1 1128 218 V342 A14 14 0 0 1 1114 356 H570 A14 14 0 0 1 556 342 V218 A14 14 0 0 1 570 204 Z" fill="#0B1120" stroke="#2A3852" stroke-width="1.5"/>
+  </g>
+  <path d="M570 204 H1114 A14 14 0 0 1 1128 218 V236 H556 V218 A14 14 0 0 1 570 204 Z" fill="#0F1728"/>
+  <circle cx="578" cy="220" r="4" fill="#3B4A63"/>
+  <circle cx="594" cy="220" r="4" fill="#3B4A63"/>
+  <circle cx="610" cy="220" r="4" fill="#3B4A63"/>
+  <text x="628" y="225" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas, monospace" font-size="14" fill="#7C8AA0">dsh — terminal</text>
+  <line x1="556" y1="236" x2="1128" y2="236" stroke="#202B40" stroke-width="1.5"/>
+
+  <text x="580" y="266" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas, monospace" font-size="15" font-weight="600" fill="#E8EFFA">DeepSeek Harness 0.7.0</text>
+  <text x="580" y="289" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas, monospace" font-size="15" fill="#8C99AE">Profile: default</text>
+  <text x="580" y="312" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas, monospace" font-size="15" fill="#8C99AE">Host pid: 48213 (taskkill /PID 48213 /F)</text>
+  <text x="580" y="338" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas, monospace" font-size="15" fill="#7BE3A6">❯</text>
+  <text x="600" y="338" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas, monospace" font-size="15" fill="#D6E0EC">dsh</text>
+  <rect x="636" y="325" width="9" height="16" rx="1" fill="#67C7FE"/>
+</svg>
