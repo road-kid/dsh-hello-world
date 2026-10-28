@@ -201,8 +201,9 @@ export function apply(ctx: ClientContext): void {
           id: SETTINGS_ACTION_ID,
           order: SETTINGS_ACTION_ORDER,
           locale: LOCALE_NAMESPACE,
-          label: t('terminal.action'),
-          inject: () => ({ t }),
+          // A thunk so the tooling/aria label follows the active locale; the
+          // component's own `t` comes from the framework seat, never an inject face.
+          label: () => t('terminal.action'),
         },
         TerminalAction,
       )

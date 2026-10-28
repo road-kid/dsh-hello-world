@@ -20,7 +20,10 @@
  *    and the JSX runtime);
  * 4. `apply` seats the controller in `settings.action` — the official header
  *    slot it shares with the terminal — through `slots.inject` + `slots.register`,
- *    right of the terminal (order 110 > 100) and before the pane's Close;
+ *    right of the terminal (order 110 > 100) and before the pane's Close; both
+ *    bundles register the SAME way (Plan B): no entry-owned `inject` face, so the
+ *    component's `t` is the framework locale seat minted per revision, and a
+ *    memoised derivation keyed on `t` recomputes on a language switch;
  * 5. every resource is installed inside `ctx.effect` under one plugin prefix,
  *    and every teardown removes what it added — no `<style>` survives an unload;
  * 6. there is one shared stylesheet: both bundles install the same sheet, it is
@@ -226,6 +229,11 @@ for (const record of registrations) {
   assert.equal(record.entry.locale, 'dsh-quick-restart', `${record.entry.id} is translated through the component namespace`)
   assert.equal(typeof record.entry.order, 'number', `${record.entry.id} declares an order inside its list slot`)
   assert.ok(record.entry.order > 100, `${record.entry.id} sorts to the right of the terminal action (order > 100)`)
+  // Plan B: `t` is the framework locale seat, not an entry-owned inject face. A
+  // stable `bind()` face here would shadow the seat's per-revision reference and
+  // freeze memoised labels on the previous language.
+  assert.equal(record.entry.inject, undefined, `${record.entry.id} takes t from the framework locale seat, not a custom inject face`)
+  assert.equal(typeof record.entry.label, 'function', `${record.entry.id} re-reads its label so tooling/aria text follows the locale`)
 }
 assert.deepEqual(namespaces, ['dsh-quick-restart'])
 console.log('✓ the restart action seats into settings.action, right of the terminal')
@@ -267,6 +275,7 @@ assert.doesNotMatch(indexSource, /shell\.overlay/u, 'the frame-wide overlay seat
 assert.doesNotMatch(indexSource, /attach|menu-row|account-menu-row/u, 'the entry no longer references the DOM seam')
 assert.doesNotMatch(indexSource, /installRestartStyles|restart\.css/u, 'the entry installs one sheet, not two')
 assert.doesNotMatch(indexSource, /@deepseek-ai\/dsh-client-ui-primitives/u, 'the entry never imports the UI primitives')
+assert.doesNotMatch(indexSource, /inject\s*:\s*\(\s*\)\s*=>/u, 'no custom inject face shadows the framework locale seat (Plan B)')
 
 const actionSource = readFileSync(join(root, 'src/client/restart-action.tsx'), 'utf8')
 assert.match(actionSource, /action\.view/u, 'the button reads its label and state from the shared view')
@@ -334,6 +343,14 @@ assert.notEqual(store.restartSnapshot().capability, published, 'a changed capabi
 const restartSource = readFileSync(join(root, 'src/client/use-restart.tsx'), 'utf8')
 assert.match(restartSource, /capability\?\.command/u, 'the dialog reads the command from the capability')
 assert.match(restartSource, /t\('dialog\.command\.label'\)/u, 'the dialog labels the command row')
+// Plan B contract, both halves in one place: the label and overlays are memoised,
+// the memo key includes the seat's `t`, and no custom inject face supplies `t`.
+// Freshness therefore rides the seat's per-revision reference; a regression to a
+// stable `bind()` face (the original bug) fails the `inject === undefined` check
+// above, and dropping `t` from the keys fails this one.
+assert.match(restartSource, /useMemo<RestartEntryView>/u, 'the restart label/state is memoised')
+assert.match(restartSource, /\[\s*capability,\s*pending,\s*stale,\s*t\s*\]/u, 'the view memo keys on the seat t, so a locale switch recomputes it')
+assert.doesNotMatch(restartSource, /inject\s*:\s*\(\s*\)\s*=>/u, 'the hook takes t as a parameter from the seat, not from an inject face')
 const { DICTIONARIES } = await import('../src/client/locales.ts')
 for (const [name, dictionary] of Object.entries(DICTIONARIES)) {
   assert.equal(typeof dictionary['dialog.command.label'], 'string', `the ${name} dictionary labels the command row`)
@@ -387,6 +404,12 @@ assert.deepEqual(
   ['settings.action/open-terminal'],
 )
 assert.deepEqual(terminalTracker.namespaces, ['dsh-quick-terminal'])
+// Same Plan B contract as the restart bundle: the terminal takes `t` from the
+// framework seat (no inject face) and re-reads its label per read.
+for (const record of terminalTracker.registrations) {
+  assert.equal(record.entry.inject, undefined, `${record.entry.id} takes t from the framework locale seat, not a custom inject face`)
+  assert.equal(typeof record.entry.label, 'function', `${record.entry.id} re-reads its label so tooling/aria text follows the locale`)
+}
 assert.deepEqual(terminalTracker.effects.map(effect => effect.label), [
   'dsh-hello-world: ui stylesheet',
   'dsh-hello-world: terminal locale',

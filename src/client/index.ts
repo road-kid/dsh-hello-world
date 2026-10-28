@@ -46,11 +46,9 @@ interface SeatOptions<P> {
   readonly id: string
   /** Ordering hint inside the seat; ascending renders left to right. */
   readonly order: number
-  /** Human label shown by tooling. */
-  readonly label: string
-  /** Translator handed to the component through `inject`. */
-  readonly t: Translate
-  /** Component to render in the seat, with the props `inject` returns. */
+  /** Human label shown by tooling; a thunk tracks the active locale. */
+  readonly label: string | (() => string)
+  /** Component to render in the seat; `t` arrives from the framework locale seat. */
   readonly component: (props: P) => ReactElement | null
   /** Effect label in the runtime's inspector. */
   readonly effectLabel: string
@@ -67,14 +65,17 @@ interface SeatOptions<P> {
  * @param options - seat coordinates and the component to render there.
  */
 function seat<P>(ctx: ClientContext, slots: SlotsService, options: SeatOptions<P>): void {
-  const { slot, id, order, label, t, component, effectLabel } = options
+  const { slot, id, order, label, component, effectLabel } = options
+  // No `inject` face: the component reads `t` from the framework's locale seat,
+  // which the renderer mints afresh per revision. Shadowing that seat with a
+  // stable `bind()` reference would freeze memoised derivations on the previous
+  // language — the exact bug this registration avoids.
   const registration: SlotRegistration = {
     name: slot,
     id,
     order,
     locale: LOCALE_NAMESPACE,
     label,
-    inject: () => ({ t }),
   }
   ctx.effect(() => {
     let dispose: (() => void) | undefined
@@ -113,8 +114,7 @@ export function apply(ctx: ClientContext): void {
     slot: SETTINGS_ACTION_SLOT,
     id: SETTINGS_ACTION_ID,
     order: SETTINGS_ACTION_ORDER,
-    label: t('action.restart'),
-    t,
+    label: () => t('action.restart'),
     component: RestartActionButton,
     effectLabel: 'dsh-hello-world: restart settings action',
   })

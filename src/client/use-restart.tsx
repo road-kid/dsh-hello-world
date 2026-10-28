@@ -1,18 +1,23 @@
 /**
- * The restart action, shared by both surfaces.
+ * The restart action.
  *
- * The behaviour lives here once, so every surface that shows the action cannot
- * diverge: read the capability, decide whether the confirmation dialog is
- * needed, post the restart, follow the Host that replaces it. A surface only
- * supplies its own markup.
+ * The behaviour lives here once, so the button and the dialog/toast it owns
+ * cannot diverge: read the capability, decide whether the confirmation dialog is
+ * needed, post the restart, follow the Host that replaces it. The surface only
+ * supplies markup.
+ *
+ * Locale: this hook takes `t` as a parameter and uses it as a memo key. The slot
+ * seat hands a fresh `t` per locale revision, so a memoised `view`/`overlays`
+ * recomputes on a language switch while unrelated re-renders stay cheap. It must
+ * never be given a stable `bind()` reference (the old bug), or a switch would be
+ * swallowed by the memo.
  *
  * The action has three states, and the label follows them: it restarts, it
  * reports progress, and — when the replacement Host never answers on this
  * address — it offers the reload that is the only remaining way forward. The
  * reload is not a separate control: it is the same action, in the one state where
  * restarting again cannot help. The label itself is derived in `entry-view.ts`
- * (`restartEntryView`) and returned here as `view`, so every surface reads the
- * same state.
+ * (`restartEntryView`) and returned here as `view`.
  *
  * The hook deliberately owns the `Modal` and `Toast` elements too, and hands
  * them back as part of the surface's own render. Both are fixed-position and
@@ -20,7 +25,7 @@
  * plugin writing anything outside its own component tree.
  */
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import type { ReactElement } from 'react'
 
 import { requestRestart } from './api.ts'
@@ -128,11 +133,17 @@ export function useRestartAction(t: Translate): RestartAction {
   }, [])
 
   const capability = snapshot.status === 'ready' ? snapshot.capability : undefined
-  // Derived on every render rather than memoised. `t` is a stable reference that
-  // reads the active locale at call time, so a memo keyed on `t` would retain the
-  // previous language after the user switches it — the slot outlet re-renders on
-  // a locale change, and recomputing here is what lets the label follow.
-  const view: RestartEntryView = restartEntryView(t, capability, stale, pending)
+  // Memoised on `t` on purpose. The slot seat hands a fresh `t` per locale
+  // revision (the renderer mints a new reference on every language switch and
+  // keeps it stable within one revision), so the pair below is the contract:
+  // freshness rides the identity of `t`, and a memo keyed on it recomputes on a
+  // switch while unrelated re-renders keep the object stable for memo children.
+  // A component must therefore take the seat's `t`, never shadow it with its own
+  // stable `bind()` face.
+  const view = useMemo<RestartEntryView>(
+    () => restartEntryView(t, capability, stale, pending),
+    [capability, pending, stale, t],
+  )
 
   const showNotice = useCallback((text: string, reload = false): void => {
     // The recovery loop outlives the surface that started it, so a late notice can
@@ -199,9 +210,9 @@ export function useRestartAction(t: Translate): RestartAction {
     void perform()
   }, [capability, pending, perform, stale])
 
-  // Rebuilt each render for the same reason as `view`: the dialog and toast copy
-  // must follow a language switch while they are open.
-  const overlays: ReactElement = ((): ReactElement => {
+  // Same contract as `view`: keyed on the seat's `t`, so an open dialog or toast
+  // follows a language switch without being rebuilt on unrelated re-renders.
+  const overlays = useMemo((): ReactElement => {
     const command = capability?.command
     const busyNote = capability === undefined
       ? undefined
@@ -281,7 +292,7 @@ export function useRestartAction(t: Translate): RestartAction {
         )}
       </>
     )
-  })()
+  }, [capability, confirming, notice, pending, perform, t])
 
   return { activate, overlays, view }
 }
