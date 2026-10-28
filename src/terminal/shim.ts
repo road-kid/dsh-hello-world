@@ -1,0 +1,218 @@
+import { createHash } from 'node:crypto'
+import { mkdirSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs'
+import { delimiter, join } from 'node:path'
+
+import type { Deployment } from './identity.ts'
+
+/**
+ * The private `dsh` shim: what it writes, and the environment that makes it win.
+ *
+ * The shim is a two-layer launcher: a shell entry (`dsh.cmd` or `dsh`) that starts
+ * the installation's executable as Node, and a Node script that fills in
+ * `--profile` for `plugin` invocations and forwards everything else verbatim to
+ * the carrier CLI. The script exists because argv rewriting belongs in one place,
+ * not in batch/shell quoting.
+ *
+ * Only the launchers live in the directory prepended to PATH; the welcome scripts
+ * of the plans are written one level up, in the private root, because a
+ * `welcome.ps1` on PATH would become a command name of its own. The directory is
+ * named `<profile>-<hash8>` so a human scanning `%TEMP%` can tell whose leftover
+ * it is, with the profile sanitized because it reaches the filesystem and comes
+ * from configuration — a `..` in it must not climb out of the temp root.
+ */
+
+/** The `dsh` shim written for one profile. */
+export interface Shim {
+  /** Directory prepended to `PATH`; holds the launchers and nothing else. */
+  readonly directory: string
+  /** The private root above it, where the plans write their welcome scripts. */
+  readonly root: string
+  /** The executable name the shell resolves (`dsh.cmd` on Windows, `dsh` elsewhere). */
+  readonly executable: string
+}
+
+/** Quote one POSIX shell single-quoted string. */
+export function shQuote(value: string): string {
+  return `'${value.replaceAll("'", "'\\''")}'`
+}
+
+/**
+ * The directory name for one profile's shim.
+ *
+ * The hash covers the profile *and* the installation, so two installations that
+ * serve the same profile name cannot share a shim that forwards to whichever one
+ * wrote it last.
+ *
+ * @param profile - the profile the shim manages.
+ * @param deployment - the installation the shim forwards to.
+ * @returns a name safe to append to the temp root.
+ */
+function shimKey(profile: string, deployment: Deployment): string {
+  const digest = createHash('sha256')
+    .update(`${profile}\0${deployment.bootstrap}\0${deployment.executable}`)
+    .digest('hex')
+    .slice(0, 8)
+  const readable = profile
+    .replace(/[^A-Za-z0-9._-]/gu, '_')
+    // `.` and `..` are valid profile names in the sanitized alphabet but not
+    // valid path components here.
+    .replace(/^\.+$/u, '_')
+    .slice(0, 32)
+  return `${readable.length > 0 ? readable : 'default'}-${digest}`
+}
+
+/**
+ * Write the `dsh` shim for one profile.
+ *
+ * @param deployment - the installation to forward to.
+ * @param profile - the profile the shim manages.
+ * @param tmp - the temporary directory root.
+ * @returns the shim directory, its private root, and the executable name.
+ */
+export function prepareTerminalShim(deployment: Deployment, profile: string, tmp: string): Shim {
+  const root = join(tmp, 'dsh-hello-world', 'terminal', shimKey(profile, deployment))
+  const bin = join(root, 'bin')
+  mkdirSync(bin, { recursive: true })
+
+  // The carrier script sits next to the launcher that calls it: one directory to
+  // inspect, and the launcher never has to name a path outside the PATH entry.
+  const script = join(bin, 'dsh.cjs')
+  writeFileSync(script, shimScript(deployment, profile), 'utf8')
+
+  if (process.platform === 'win32') {
+    const shim = join(bin, 'dsh.cmd')
+    writeFileSync(
+      shim,
+      [
+        '@echo off',
+        'setlocal DisableDelayedExpansion',
+        'set "ELECTRON_RUN_AS_NODE=1"',
+        `"${deployment.executable}" "${script}" %*`,
+        'exit /b %errorlevel%',
+        '',
+      ].join('\r\n'),
+      'utf8',
+    )
+    return { directory: bin, root, executable: shim }
+  }
+
+  const shim = join(bin, 'dsh')
+  writeFileSync(
+    shim,
+    `#!/bin/sh\nELECTRON_RUN_AS_NODE=1 exec ${shQuote(deployment.executable)} ${shQuote(script)} "$@"\n`,
+    // A launcher on PATH has to be executable; the write is the only chance to
+    // set the mode before a shell tries to run it.
+    { encoding: 'utf8', mode: 0o755 },
+  )
+  return { directory: bin, root, executable: shim }
+}
+
+/**
+ * The Node half of the shim.
+ *
+ * It runs under the installation's Node (via `ELECTRON_RUN_AS_NODE`) and forwards
+ * to the desktop carrier CLI. `plugin` is the one command family that needs
+ * `--profile` filled in — and the one the carrier may run for the reserved
+ * `desktop` profile. Other invocations are forwarded untouched so `dsh web` and
+ * `dsh --version` keep their normal meaning.
+ *
+ * @param deployment - the installation to forward to.
+ * @param profile - the profile the shim manages.
+ * @returns the CommonJS source to write.
+ */
+function shimScript(deployment: Deployment, profile: string): string {
+  return `'use strict'
+// Generated by dsh-hello-world: forward \`dsh\` to the installation's desktop CLI.
+const { spawnSync } = require('node:child_process')
+const app = ${JSON.stringify(deployment.executable)}
+const bootstrap = ${JSON.stringify(deployment.bootstrap)}
+const profile = ${JSON.stringify(profile)}
+const args = process.argv.slice(2)
+
+function hasProfile(argv) {
+  return argv.some(argument => argument === '--profile' || argument.startsWith('--profile='))
+}
+
+const DUMPS = ['--dump-config', '--dump-default-config', '--dump-config-schema']
+const dumpFlag = args.find(argument => DUMPS.includes(argument))
+
+let forwarded = args
+if (!hasProfile(args) && args[0] === 'plugin') {
+  forwarded = ['plugin', '--profile', profile, ...args.slice(1)]
+} else if (!hasProfile(args) && dumpFlag !== undefined) {
+  // Dumps always need a profile; filling it in lets the launcher explain that
+  // the desktop profile is reserved instead of asking for a flag the user cannot use.
+  forwarded = ['--profile', profile, ...args]
+}
+
+const child = spawnSync(app, ['--expose-internals', bootstrap, ...forwarded], {
+  stdio: 'inherit',
+  env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
+})
+if (child.error) {
+  process.stderr.write('[dsh] ' + child.error.message + '\\n')
+  process.exit(1)
+}
+process.exit(child.status === null ? 1 : child.status)
+`
+}
+
+/**
+ * The environment for the terminal process.
+ *
+ * @param environment - the Host environment.
+ * @param options.home - `DSH_HOME`, when known.
+ * @param options.shim - the generated shim, when one was written.
+ * @returns a copy of the Host environment with `ELECTRON_RUN_AS_NODE` removed and
+ * the shim directory first on PATH.
+ */
+export function terminalEnvironment(
+  environment: NodeJS.ProcessEnv,
+  options: { readonly home?: string; readonly shim?: Shim } = {},
+): NodeJS.ProcessEnv {
+  const result: NodeJS.ProcessEnv = {}
+  for (const [key, value] of Object.entries(environment)) {
+    if (value === undefined) continue
+    // A shell that inherited this would break every Electron binary started from
+    // it, and Windows spells the variable in whatever case it likes.
+    if (key.toUpperCase() === 'ELECTRON_RUN_AS_NODE') continue
+    result[key] = value
+  }
+  if (options.home !== undefined) result.DSH_HOME = options.home
+  if (options.shim !== undefined) {
+    const current = result.PATH ?? result.Path ?? ''
+    // Windows environment blocks are case-insensitive but this object is not:
+    // leaving the inherited `Path` next to a new `PATH` leaves the child's PATH to
+    // chance. Keep exactly one spelling — the one this function writes.
+    for (const key of Object.keys(result)) {
+      if (key !== 'PATH' && key.toUpperCase() === 'PATH') delete result[key]
+    }
+    result.PATH = current.length > 0 ? `${options.shim.directory}${delimiter}${current}` : options.shim.directory
+  }
+  return result
+}
+
+/**
+ * Delete welcome scripts that older builds and failed launches left in the temp
+ * directory. Best-effort housekeeping: never a reason to refuse a terminal.
+ *
+ * @param tmp - the Host's temp directory.
+ */
+export function pruneLegacyScripts(tmp: string): void {
+  try {
+    for (const name of readdirSync(tmp)) {
+      // Older releases wrote one script per open under the previous names.
+      const legacy = name.startsWith('dsh-hello-world-terminal-')
+        || name.startsWith('dsh-just-restart-terminal-')
+      if (!legacy) continue
+      if (!name.endsWith('.ps1') && !name.endsWith('.command') && !name.endsWith('.sh')) continue
+      try {
+        unlinkSync(join(tmp, name))
+      } catch {
+        // Another process may hold it open; the next open retries.
+      }
+    }
+  } catch {
+    // No temp directory, or no permission to list it: nothing to clean.
+  }
+}
