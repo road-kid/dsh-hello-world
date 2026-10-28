@@ -4,6 +4,18 @@
   "type": "module",
   "description": "Restart DSH from the settings header, right beside the “Open DSH terminal” button. One plugin, two components: dsh-quick-restart and dsh-quick-terminal.",
   "license": "MIT",
+  "author": {
+    "name": "liang",
+    "email": "46836086+road-kid@users.noreply.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/road-kid/dsh-hello-world.git"
+  },
+  "homepage": "https://github.com/road-kid/dsh-hello-world#readme",
+  "bugs": {
+    "url": "https://github.com/road-kid/dsh-hello-world/issues"
+  },
   "keywords": [
     "deepseek-harness",
     "dsh",
