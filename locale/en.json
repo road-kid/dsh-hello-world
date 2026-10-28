@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Quick Restart & Terminal",
-    "description": "Adds restart and \u201cOpen DSH terminal\u201d actions to the settings header, plus the /restart command: one plugin with two independently switchable components."
+    "title": "Hello, DeepSeek",
+    "description": "DeepSeek Harness Starter Pack: your first plugin, adding restart and \u201cOpen DSH terminal\u201d actions to the settings header plus the /restart command; one plugin, two components."
   }
 }

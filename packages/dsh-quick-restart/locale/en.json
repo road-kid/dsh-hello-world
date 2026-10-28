@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "Quick Restart",
-    "description": "Adds the restart button to the settings header, to the right of “Open DSH terminal”, plus the typed /restart command."
+    "description": "Adds a restart button to the top right of the settings header, with the /restart command."
   }
 }
