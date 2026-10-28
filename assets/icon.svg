@@ -1,0 +1,13 @@
+<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g fill="url(#hello-world-face)">
+    <circle cx="8.6" cy="15.6" r="2.4" />
+    <circle cx="8.6" cy="25.6" r="2.4" />
+  </g>
+  <path d="M16.8 9.2H21.4C27.6 9.2 31.2 13.3 31.2 18C31.2 22.7 27.6 26.8 21.4 26.8H16.8V9.2Z" stroke="url(#hello-world-face)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" />
+  <defs>
+    <linearGradient id="hello-world-face" x1="6" y1="9" x2="31" y2="27" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67C7FE" />
+      <stop offset="1" stop-color="#3F77D8" />
+    </linearGradient>
+  </defs>
+</svg>

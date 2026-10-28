@@ -1,0 +1,4 @@
+.tmp-test/
+node_modules/
+lib/
+packages/*/lib/

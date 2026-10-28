@@ -1,0 +1,15 @@
+# dsh-hello-world is a bundle: it ships no entry of its own. The rows below are
+# the two components. Each is an embedded package whose directory this package
+# declares in `dependencies` (a `file:` path) and links under `node_modules`.
+# The declaration is what puts the component into the profile's resolution
+# table: a row specifier is a bare package name, and the loader resolves it
+# against that table, whose profile scope is the dependency closure of every
+# profile layer. A component that is only present on disk is invisible there and
+# its row fails to import with ERR_MODULE_NOT_FOUND. Declared this way, each
+# component keeps its own title and description in the plugin manager while the
+# plugin stays one card.
+- insert:
+    - id: quick-restart
+      name: dsh-quick-restart
+    - id: quick-terminal
+      name: dsh-quick-terminal

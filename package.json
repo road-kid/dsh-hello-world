@@ -1,0 +1,75 @@
+{
+  "name": "dsh-hello-world",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Restart DSH from the settings header, right beside the “Open DSH terminal” button. One plugin, two components: dsh-quick-restart and dsh-quick-terminal.",
+  "license": "MIT",
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "restart",
+    "relaunch",
+    "terminal",
+    "settings-header"
+  ],
+  "icon": "./assets/icon.svg",
+  "engines": {
+    "node": ">=22.18",
+    "dsh": ">=0.2.1-rc.2 <0.3.0"
+  },
+  "exports": {
+    ".": "./lib/index.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./assets/icon.svg",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/index.js.map",
+    "packages",
+    "locale",
+    "assets",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "scripts": {
+    "build": "node scripts/sync-version.mjs && node build.mjs",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run build",
+    "verify:host": "node scripts/verify-host.mjs",
+    "verify:plan": "node scripts/verify-plan.mjs",
+    "verify:client": "node scripts/verify-client.mjs",
+    "verify:bundle": "node scripts/verify-bundle.mjs",
+    "verify": "npm run check && npm run verify:bundle && npm run verify:host && npm run verify:plan && npm run verify:client",
+    "prepare": "node scripts/sync-version.mjs && node build.mjs"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "~3.18.4",
+    "dsh-quick-restart": "file:./packages/dsh-quick-restart",
+    "dsh-quick-terminal": "file:./packages/dsh-quick-terminal"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5",
+    "@types/node": "^22.20.5",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "esbuild": "^0.25.12",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.6.3"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": ">=4.0.5"
+  },
+  "main": "lib/index.js"
+}

@@ -1,0 +1,18 @@
+# Editors agree with the code style the repository already uses:
+# two spaces, single quotes, no semicolons, LF line endings.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+# Markdown keeps trailing spaces as hard line breaks and wraps by hand.
+trim_trailing_whitespace = false
+
+[*.{json,yml,yaml}]
+indent_size = 2
