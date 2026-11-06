@@ -72,7 +72,7 @@
   <text x="628" y="225" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas, monospace" font-size="14" fill="#7C8AA0">dsh — terminal</text>
   <line x1="556" y1="236" x2="1128" y2="236" stroke="#202B40" stroke-width="1.5"/>
 
-  <text x="580" y="266" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas, monospace" font-size="15" font-weight="600" fill="#E8EFFA">DeepSeek Harness 0.7.0</text>
+  <text x="580" y="266" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas, monospace" font-size="15" font-weight="600" fill="#E8EFFA">DeepSeek Harness 0.2.1-rc.3</text>
   <text x="580" y="289" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas, monospace" font-size="15" fill="#8C99AE">Profile: default</text>
   <text x="580" y="312" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas, monospace" font-size="15" fill="#8C99AE">Host pid: 48213 (taskkill /PID 48213 /F)</text>
   <text x="580" y="338" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas, monospace" font-size="15" fill="#7BE3A6">❯</text>
