@@ -20,13 +20,15 @@ DeepSeek Harness 的一个小插件包，在设置页头部加入两个控件：
 把包加入某个 profile：
 
 ```bash
-dsh plugin --profile <profile> add <本包目录>
+dsh plugin --profile <profile> add @roadkid/dsh-hello-world
 ```
+
+也可以指向本地目录：`add <本包目录>`。
 
 然后打开 **设置**，两个按钮会出现在头部右上角。移除插件包：
 
 ```bash
-dsh plugin --profile <profile> remove dsh-hello-world
+dsh plugin --profile <profile> remove @roadkid/dsh-hello-world
 ```
 
 ## 使用

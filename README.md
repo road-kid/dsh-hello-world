@@ -20,13 +20,15 @@ One bundle ships both packages. Quick Terminal registers at order `100` and Quic
 Add the package to a profile:
 
 ```bash
-dsh plugin --profile <profile> add <this-package-directory>
+dsh plugin --profile <profile> add @roadkid/dsh-hello-world
 ```
+
+A local checkout works the same way: `add <this-package-directory>`.
 
 Then open **Settings**. Both buttons appear at the top right of the header. To remove the bundle:
 
 ```bash
-dsh plugin --profile <profile> remove dsh-hello-world
+dsh plugin --profile <profile> remove @roadkid/dsh-hello-world
 ```
 
 ## Using it
